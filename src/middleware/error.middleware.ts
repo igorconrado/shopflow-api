@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { JsonWebTokenError } from "jsonwebtoken";
-import { NotFoundError } from "../config/errors";
+import { NotFoundError, BadRequestError, UnauthorizedError } from "../config/errors";
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction): void {
   if (err instanceof ZodError) {
@@ -17,8 +17,9 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     return;
   }
 
-  if (err instanceof NotFoundError) {
-    res.status(404).json({ error: err.message });
+  if (err instanceof BadRequestError || err instanceof UnauthorizedError || err instanceof NotFoundError) {
+    const statusCode = (err as any).statusCode || 500;
+    res.status(statusCode).json({ error: err.message });
     return;
   }
 

@@ -2,12 +2,13 @@ import bcrypt from "bcryptjs";
 import prisma from "../config/prisma";
 import { generateToken } from "../config/jwt";
 import { RegisterInput, LoginInput } from "./auth.schemas";
+import { BadRequestError, UnauthorizedError } from "../config/errors";
 
 export async function register(data: RegisterInput) {
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
 
   if (existing) {
-    throw new Error("Email already registered");
+    throw new BadRequestError("Email already registered");
   }
 
   const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -32,13 +33,13 @@ export async function login(data: LoginInput) {
   const user = await prisma.user.findUnique({ where: { email: data.email } });
 
   if (!user) {
-    throw new Error("Invalid credentials");
+    throw new UnauthorizedError("Invalid credentials");
   }
 
   const valid = await bcrypt.compare(data.password, user.password);
 
   if (!valid) {
-    throw new Error("Invalid credentials");
+    throw new UnauthorizedError("Invalid credentials");
   }
 
   const token = generateToken(user.id, user.role);
