@@ -1,9 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodSchema } from "zod";
 
-export function validate(schema: ZodSchema) {
+type ValidateTarget = "body" | "query" | "params";
+
+export function validate(schema: ZodSchema, target: ValidateTarget = "body") {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const result = schema.safeParse(req.body);
+    const data = target === "body" ? req.body : target === "query" ? req.query : req.params;
+    const result = schema.safeParse(data);
 
     if (!result.success) {
       res.status(400).json({
@@ -13,7 +16,13 @@ export function validate(schema: ZodSchema) {
       return;
     }
 
-    req.body = result.data;
+    // Assign validated data - query goes to a custom property since it's readonly
+    if (target === "body") {
+      req.body = result.data;
+    } else if (target === "query") {
+      (req as any).validatedQuery = result.data;
+    }
+
     next();
   };
 }
