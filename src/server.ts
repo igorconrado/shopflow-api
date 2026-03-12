@@ -5,6 +5,7 @@ import categoryRoutes from "./category/category.routes";
 import productRoutes from "./product/product.routes";
 import cartRoutes from "./cart/cart.routes";
 import orderRoutes from "./order/order.routes";
+import summaryRoutes from "./summary/summary.routes";
 import { errorHandler } from "./middleware/error.middleware";
 
 const app = express();
@@ -21,6 +22,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/summary", summaryRoutes);
 
 app.use(errorHandler);
 
